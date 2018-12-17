@@ -21,11 +21,14 @@ def prepare_experiment():
 
 def generate_sequences():
 
-    cfg = json.load(open(os.environ["EXPDIR"] + "config.json"))
+    cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
+    speakers=[]
+    for i in cfg["speakers"]:
+        speakers.append(int(i))
     for condition in cfg["perception_test_conditions"]:
-        seq = sequence(np.asarray(cfg["speakers"], dtype=int),cfg["perception_test_trials"])
-        np.savetxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/lists/"+condition+".txt")
-
+        seq = sequence(speakers,cfg["perception_test_trials"])
+        np.savetxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/lists/"+condition+".txt", seq)
+        print("save...")
 
     return
 def sequence(trial_list, repetitions, space = 1):
@@ -52,6 +55,8 @@ def sequence(trial_list, repetitions, space = 1):
     return seq
 
 if __name__ == "__main__":
+    os.environ["SUBJECT"] = "el03"  # <-- Enter Subject here
+    os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
     generate_sequences()
 
 

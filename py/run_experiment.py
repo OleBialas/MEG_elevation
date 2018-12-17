@@ -2,7 +2,7 @@ import binaural_recording
 import perception_test
 import plotting
 import os
-os.environ["SUBJECT"] = "test_2" # <-- Enter Subject here
+os.environ["SUBJECT"] = "el03" # <-- Enter Subject here
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
 
 
@@ -17,7 +17,7 @@ binaural_recording.recording()
 
 #STEP 4: plot recordings, the signal from right should be bigger than the signal from the left. spectra should look
 #similar with some variation across speakers and from left to right.
-binaural_recording.plot_recordings()
+plotting.plot_recordings()
 
 # STEP 4: headphone test without adapter
 response = perception_test.headphones()

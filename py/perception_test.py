@@ -1,4 +1,4 @@
-import TDTblackbox as tdt
+import tdt
 import time
 import numpy as np
 from freefield_table import freefield_table
@@ -94,13 +94,10 @@ def headphones(adapter=False):
 
 
 def read_responsebox(processor):
-    import random
     bitval = 31  # bitmask value for no button pushed
     tic = time.time()
-    tmp = [31,21,15,23,27]
     while bitval == 31:
         bitval = int(processor.GetTagVal("Response"))
-        bitval = random.choice(tmp)
     if bitval == 30:
         button = 21
     elif bitval == 15:
