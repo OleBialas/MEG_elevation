@@ -1,4 +1,4 @@
-import TDTblackbox as tdt
+import tdt
 import time
 import numpy as np
 from freefield_table import freefield_table

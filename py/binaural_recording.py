@@ -1,4 +1,4 @@
-import TDTblackbox as tdt
+import tdt
 import time
 from freefield_table import *
 import json
