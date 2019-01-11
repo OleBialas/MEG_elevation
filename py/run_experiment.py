@@ -2,7 +2,7 @@ import binaural_recording
 import perception_test
 import plotting
 import os
-os.environ["SUBJECT"] = "el03" # <-- Enter Subject here
+os.environ["SUBJECT"] = "test" # <-- Enter Subject here
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
 
 
