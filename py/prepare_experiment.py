@@ -26,18 +26,14 @@ def generate_sequences():
     for i in cfg["speakers"]:
         speakers.append(int(i))
     for condition in cfg["perception_test_conditions"]:
-<<<<<<< HEAD
         seq = sequence(speakers,cfg["perception_test_trials"])
         np.savetxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/"+condition+".txt", seq)
         print("save...")
-=======
-        seq = sequence(np.asarray(cfg["speakers"], dtype=int),cfg["perception_test_trials"])
-        np.savetxt(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/lists/"+condition+".txt")
+
     for block in cfg["meg_blocks"]:
         seq = oneback(speakers,cfg["meg_test_trials"], cfg["oneback_frequency"])
         np.savetxt(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/lists/meg_test_block_"+str(block)+".txt", seq)
 
->>>>>>> 88acfde2916c33dfa4506c8c1c36c353b8f9d9cb
 
     return
 def sequence(trial_list, repetitions, space = 1):
@@ -63,12 +59,6 @@ def sequence(trial_list, repetitions, space = 1):
         seq = seq + trial_list
     return seq
 
-<<<<<<< HEAD
-if __name__ == "__main__":
-    os.environ["SUBJECT"] = "el80"  # <-- Enter Subject here
-    os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
-    generate_sequences()
-=======
 def oneback(trial_list, repetitions, oneback_freq, space=1):
 
     n_trials = repetitions*len(trial_list)
@@ -96,11 +86,10 @@ def oneback(trial_list, repetitions, oneback_freq, space=1):
             else:
                 print("shuffeling")
     return seq
->>>>>>> 88acfde2916c33dfa4506c8c1c36c353b8f9d9cb
 
 if __name__ == "__main__":
-    seq = oneback([21,23,25,27],120,0.1)
-    print(seq)
-    print(len(seq))
+    os.environ["SUBJECT"] = "el80"  # <-- Enter Subject here
+    os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
+    generate_sequences()
 
     
