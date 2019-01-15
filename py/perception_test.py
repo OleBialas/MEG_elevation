@@ -5,7 +5,6 @@ from freefield_table import freefield_table
 from utilities import prepare_stimuli
 import os
 import json
-
 LCID = 0x0
 
 def free_field():
@@ -18,7 +17,7 @@ def free_field():
     ZB = tdt.initialize_zbus(connection="GB")
 
     for processor in RX8:
-        processor.SetTagVal("n_samples", int(cfg["dur_freefield"]*cfg["FS"]))
+        processor.SetTagVal("n_samples", int(cfg["dur_stimulus_long"]*cfg["FS"]))
 
     response = np.zeros([len(seq),3]) #output array with three columns: stimulus, response and time
     count = 0
