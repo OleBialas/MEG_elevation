@@ -27,7 +27,7 @@ def generate_sequences():
         speakers.append(int(i))
     for condition in cfg["perception_test_conditions"]:
         seq = sequence(speakers,cfg["perception_test_trials"])
-        np.savetxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/lists/"+condition+".txt", seq)
+        np.savetxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/"+condition+".txt", seq)
         print("save...")
 
     return
@@ -55,7 +55,7 @@ def sequence(trial_list, repetitions, space = 1):
     return seq
 
 if __name__ == "__main__":
-    os.environ["SUBJECT"] = "el03"  # <-- Enter Subject here
+    os.environ["SUBJECT"] = "el80"  # <-- Enter Subject here
     os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
     generate_sequences()
 

@@ -10,7 +10,7 @@ LCID = 0x0
 
 def free_field():
     cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
-    seq = np.loadtxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/lists/freefield.txt")
+    seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/freefield.txt")
     RX8=[]
     for i in [1,2]:
         RX8.append(tdt.initialize_processor(processor="RX8",connection="GB",index=i, path=os.environ["EXPDIR"]+"rpvdsx/play_noise.rcx"))
@@ -41,24 +41,24 @@ def free_field():
         processor.Halt()
     RP2.Halt()
 
-    np.savetxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/results/freefield.txt", response)
+    np.savetxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/results/freefield.txt", response)
 
     return response
 
-def headphones(adapter=False):
+def headphones(dur_stimulus="long", adapter=False):
     cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
     RX8 = tdt.initialize_processor(processor="RX8", connection="GB", index=2, path=os.environ["EXPDIR"]+"rpvdsx/LED.rcx")
     RP2 = tdt.initialize_processor(processor="RP2", connection="GB", index=1, path=os.environ["EXPDIR"]+"rpvdsx/play_stereo.rcx")
     ZB = tdt.initialize_zbus("GB")
     if adapter:
-        seq = np.loadtxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/lists/headphone_test_adapter.txt")
+        seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/headphones_adapter.txt")
     else:
-        seq = np.loadtxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/lists/headphone_test.txt")
+        seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/headphones.txt")
 
     count=0
     response = np.zeros([len(seq),3]) #output array with three columns: stimulus, response and time
     for i in seq:
-        left, right = prepare_stimuli(i, adapter)
+        left, right = prepare_stimuli(i,dur_stimulus, adapter)
         if count == 0:
             RP2.SetTagVal("playbuflen", len(left))
         RP2._oleobj_.InvokeTypes(15, LCID, 1, (3, 0), ((8, 0), (3, 0), (0x2005, 0)), 'left', 0, left) # = RP2.WriteTagV("left", 0, left)
@@ -82,9 +82,9 @@ def headphones(adapter=False):
         count+=1
         print(count)
     if adapter:
-        np.savetxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/results/headphones_adapter.txt", response)
+        np.savetxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/results/headphones_adapter.txt", response)
     else:
-        np.savetxt(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/results/headphones.txt", response)
+        np.savetxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/results/headphones_"+dur_stimulus+".txt", response)
 
 
     RP2.Halt()
