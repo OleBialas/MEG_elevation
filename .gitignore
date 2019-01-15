@@ -1,5 +1,5 @@
 data/
-py/.idea/
+py/.idea
 py/__pycache__
-py/__pycache__/
+
 docs/
