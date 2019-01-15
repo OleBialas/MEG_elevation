@@ -6,6 +6,7 @@ import numpy as np
 def prepare_stimuli(speaker_nr, dur="long", adapter=False):
 
     cfg = json.load(open(os.environ["EXPDIR"] + "cfg/elevation.cfg"))
+<<<<<<< HEAD
     left = wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_left.wav")[1]
     right=wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_right.wav")[1]
     n = len(left)
@@ -15,6 +16,19 @@ def prepare_stimuli(speaker_nr, dur="long", adapter=False):
         n_stimulus = int(cfg["dur_stimulus_short"]*cfg["FS"])
 
 
+=======
+    left = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_left.wav")[1]
+    right=wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_right.wav")[1]
+
+    n = len(left)
+    if adapter == True:
+        adapter_left = ramp(wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"] + "/recordings/adapter_left.wav")[1])
+        adapter_right = ramp(wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"] + "/recordings/adapter_right.wav")[1])
+        n_stimulus = int(cfg["dur_stimulus"]*cfg["FS"])
+        n_adapter = len(adapter_left)
+    else:
+        n_stimulus = int(cfg["dur_freefield"] * cfg["FS"])
+>>>>>>> 88acfde2916c33dfa4506c8c1c36c353b8f9d9cb
     # pick random segment from recorded stimulus
     start = np.random.randint(0, len(left)-n_stimulus)
     left = ramp(left[start:start+n_stimulus])
