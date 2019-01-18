@@ -3,7 +3,7 @@ from mne.epochs import Epochs
 from mne import read_events, pick_types, pick_channels
 from matplotlib import pyplot as plt
 import numpy as np
-expdir = "C:/Projects/Elevation/bennewitz/"
+import os
 
 def get_epochs(subject, block, event_id, time, baseline,filt=(0.1,200), selection=None, reject={}, exclude_bads=True):
 
@@ -19,12 +19,13 @@ def get_epochs(subject, block, event_id, time, baseline,filt=(0.1,200), selectio
     and EEG separately. If empty then no epochs are rejected
     :param filt: (list/tuple) low and high cut off for filter. IF empty, no filter is used
     """
-    raw = read_raw_fif(expdir+subject+"/"+subject+str(block)+".fif", preload=True)
-    raw.info["bads"] += list(np.loadtxt(expdir+subject+"/bad_channels.txt", dtype=str))
+    raw = read_raw_fif(os.environ["DATADIR"]+subject+"/"+subject+str(block)+".fif", preload=True)
+    if exclude_bads:
+        raw.info["bads"] += list(np.loadtxt(os.environ["DATADIR"]+subject+"/bad_channels.txt", dtype=str))
     picks = pick_types(raw.info, selection=selection)
     if filt:
         raw.filter(l_freq=0.1,h_freq=200)
-    events = read_events(expdir + subject + "/" + subject + str(block) + "_cor.eve")
+    events = read_events(os.environ["DATADIR"] + subject + "/" + subject + str(block) + "_cor.eve")
     epochs = Epochs(raw, events, event_id=event_id, tmin=time[0], tmax=time[1],
                             baseline=(baseline[0], baseline[1]),picks=picks, reject=reject, preload=True)
 
@@ -42,7 +43,7 @@ def get_evokeds(epochs, event_id, picks=None, exclude=[]):
     """
     evokeds=[]
     if picks == "mag":
-        picks_ = pick_types(epochs.info, meg="mag")
+        picks = pick_types(epochs.info, meg="mag")
     elif picks == "grad":
         picks = pick_types(epochs.info, meg="grad")
     if type(picks) == list:
@@ -58,10 +59,10 @@ def get_evokeds_rms(evokeds, event_id):
     :param event_id: (dict) event names and codes
     :return: list containing the root mean square over all channels for each event
     """
-    evokeds_rms =[]
+    evokeds_rms = []
     n_channels = len(evokeds[0].data)
     n_samples = len(evokeds[0].data[0])
-    for evoked, id in zip(evokeds,sorted(event_id.keys())):
+    for evoked in evokeds:
         ch_rms = np.zeros(n_samples)
         for ch in evoked.data:
             ch_rms += np.square(ch)
