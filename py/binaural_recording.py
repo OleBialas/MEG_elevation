@@ -8,7 +8,7 @@ import numpy as np
 from utilities import spectrum
 
 def recording():
-    cfg = json.load(open(os.environ["EXPDIR"] + "config.json"))
+    cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
     RX8=[]
     for i in [1,2]:
         RX8.append(tdt.initialize_processor(processor="RX8", connection="GB", index=i, path=os.environ["EXPDIR"] + "rpvdsx/play_noise.rcx"))
@@ -50,7 +50,7 @@ def recording():
 
 def make_adapter(sounds):
     from statsmodels.nonparametric.smoothers_lowess import lowess
-    cfg = json.load(open(os.environ["EXPDIR"] + "config.json"))
+    cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
     n_samples = int(cfg["dur_adapter"]*cfg["FS"])+200
     # average spectrum over all speakers
     count = 0
@@ -70,13 +70,13 @@ def make_adapter(sounds):
 
 def write(left, right, adapter_left, adapter_right):
     # normalize adapter and recodrings while preserving IID
-    cfg = json.load(open(os.environ["EXPDIR"] + "config.json"))
+    cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
     rms = np.array([0,0], dtype=float) # rms for left and right
     #calculate difference in average RMS between left and right
     for l, r, i in zip(left,right,cfg["speakers"]):
-        wavfile.write(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_left_raw.wav",
+        wavfile.write(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_left_raw.wav",
                       int(cfg["FS"]), l)
-        wavfile.write(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_right_raw.wav",
+        wavfile.write(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_right_raw.wav",
                       int(cfg["FS"]),r)
         rms[0] += np.sqrt(np.mean(np.square(l)))
         rms[1] += np.sqrt(np.mean(np.square(r)))
@@ -87,13 +87,14 @@ def write(left, right, adapter_left, adapter_right):
     for i in cfg["speakers"]:
         left[count] = left[count] / np.sqrt(np.mean(np.square(left[count])))
         right[count] = right[count] / np.sqrt(np.mean(np.square(right[count]))) * iid_factor
-        wavfile.write(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_left.wav",
+        wavfile.write(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_left.wav",
                       int(cfg["FS"]), left[count])
-        wavfile.write(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_right.wav",
+        wavfile.write(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/speaker_" + str(i) + "_right.wav",
                       int(cfg["FS"]), right[count])
+        count+=1
     adapter_left = adapter_left / np.sqrt(np.mean(np.square(adapter_left)))
     adapter_right = adapter_right / np.sqrt(np.mean(np.square(adapter_right)))* iid_factor
-    wavfile.write(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/adapter_left.wav", int(cfg["FS"]),
+    wavfile.write(os.environ["EXPDIR"] + "data/"+os.environ["SUBJECT"] + "/recordings/adapter_left.wav", int(cfg["FS"]),
                   adapter_left)
-    wavfile.write(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/adapter_right.wav", int(cfg["FS"]),
+    wavfile.write(os.environ["EXPDIR"] + "data/"+ os.environ["SUBJECT"] + "/recordings/adapter_right.wav", int(cfg["FS"]),
                   adapter_right)

@@ -38,10 +38,10 @@ def plot_response(response):
 def plot_recordings():
     from matplotlib import pyplot as plt
 
-    cfg = json.load(open(os.environ["EXPDIR"] + "config.json"))
+    cfg = json.load(open(os.environ["EXPDIR"] +"cfg/elevation.cfg"))
     for speaker in cfg["speakers"]:
-        left = wavfile.read(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_left.wav")
-        right = wavfile.read(os.environ["EXPDIR"]+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_right.wav")
+        left = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_left.wav")
+        right = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_right.wav")
         times = np.arange(0,10,10/len(left[1]))
         Z_left, freqs, _ = spectrum(left[1], left[0],log_power=True)
         Z_right, _, _ = spectrum(right[1], right[0], log_power=True)
@@ -51,8 +51,8 @@ def plot_recordings():
         ax[0,1].plot(times, right[1])
         ax[1,0].plot(freqs, Z_left)
         ax[1,1].plot(freqs, Z_right)
-    left = wavfile.read(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/adapter_left.wav")
-    right = wavfile.read(os.environ["EXPDIR"] + os.environ["SUBJECT"] + "/recordings/adapter_right.wav")
+    left = wavfile.read(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/adapter_left.wav")
+    right = wavfile.read(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/adapter_right.wav")
     times = np.arange(0, 10, 10 / len(left[1]))
     Z_left, freqs, _ = spectrum(left[1], left[0], log_power=True)
     Z_right, _, _ = spectrum(right[1], right[0], log_power=True)
