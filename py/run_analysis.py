@@ -5,13 +5,11 @@ from mne import pick_types, read_events, pick_channels
 from mne.epochs import Epochs
 from mne.viz import plot_evoked_topo
 
-os.environ["SUBJECT"] = "el01b" # <-- Enter Subject here
-os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
-os.environ["DATADIR"] = "C:/Projects/megdata/"
+os.environ["SUBJECT"] = "el99p" # <-- Enter Subject here
 
 cfg = json.load(open(os.environ["EXPDIR"]+"cfg/epochs.cfg"))
 
-block = 4
+block = 1
 # STEP 1: Plot raw data and identify bad channels
 raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+"_raw.fif", preload=True)
 events = read_events(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+"_cor.eve")
