@@ -3,20 +3,15 @@ import os
 from scipy.io import wavfile
 import numpy as np
 
-def prepare_stimuli(speaker_nr, dur="long", adapter=False):
+def prepare_stimuli(speaker_nr, dur="short", adapter=False):
 
     cfg = json.load(open(os.environ["EXPDIR"] + "cfg/elevation.cfg"))
-    left = wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_left.wav")[1]
-    right=wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_right.wav")[1]
+    left = wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_left_norm.wav")[1]
+    right=wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_right_norm.wav")[1]
     if dur == "long":
         n_stimulus = int(cfg["dur_stimulus_long"]*cfg["FS"])
     if dur == "short":
         n_stimulus = int(cfg["dur_stimulus_short"]*cfg["FS"])
-
-    if adapter == True:
-        adapter_left = ramp(wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"] + "/recordings/adapter_left.wav")[1])
-        adapter_right = ramp(wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"] + "/recordings/adapter_right.wav")[1])
-        n_adapter = len(adapter_left)
 
     # pick random segment from recorded stimulus
     start = np.random.randint(0, len(left)-n_stimulus)
@@ -71,6 +66,7 @@ def spectrum(x, FS, log_power=False):
     if log_power:
         Z[Z < 1e-20] = 1e-20  # no zeros because we take logs
         Z = 10 * np.log10(Z)
+
 
     return Z, freqs, phase # for some reason the last samples is really high and should be removed
 

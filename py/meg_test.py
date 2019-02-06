@@ -7,12 +7,12 @@ import time
 LCID = 0x0
 
 def run_experiment():
-    RX8 = tdt.initialize_processor(processor="RX8", connection="GB", index=1, path=os.environ["EXPDIR"]+"rpvdsx/play_stereo_preload.rcx")
+    RX8 = tdt.initialize_processor(processor="RX8", connection="USB", index=1, path=os.environ["EXPDIR"]+"rpvdsx/play_stereo_meg.rcx")
     cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
     RX8.SetTagVal("n_pulses", cfg["n_pulses"])
     RX8.SetTagVal("isi", cfg["dur_isi"])
     for i in cfg["meg_blocks"]:
-        seq = np.loadtxt(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/lists/meg_test_"+str(i)+".txt")
+        seq = np.loadtxt(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/lists/meg_test_block_"+str(i)+".txt")
         input("press enter to start the next block")
         run_block(seq, cfg["speakers"], cfg["multiplexer"],cfg["n_pulses"], RX8, cfg["FS"])
 
@@ -53,7 +53,7 @@ def run_block(seq, speakers, multiplexer, n_pulses, RX8, FS):
                 #RX8.WriteTagV(seq[i] + "_left", 0, left)
                 #RX8.WriteTagV(str(seq[i]) + "_right", 0, right)
                 print("reloading speaker "+str(seq[i]))
-        
+
         while RX8.GetTagVal("cur_n") == pulse_number: # wait until next trial begins
             time.sleep(0.01)
             print("waiting for pulsetrain")
@@ -63,4 +63,3 @@ if __name__ == "__main__":
     os.environ["SUBJECT"] = "el03"  # <-- Enter Subject here
     os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
     run_experiment()
-
