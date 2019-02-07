@@ -3,20 +3,15 @@ import os
 from scipy.io import wavfile
 import numpy as np
 
-def prepare_stimuli(speaker_nr, dur="long", adapter=False):
+def prepare_stimuli(speaker_nr, dur="short", adapter=False):
 
     cfg = json.load(open(os.environ["EXPDIR"] + "cfg/elevation.cfg"))
-    left = wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_left.wav")[1]
-    right=wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_right.wav")[1]
+    left = wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_left_norm.wav")[1]
+    right=wavfile.read(os.environ["EXPDIR"]+"/data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+str(int(speaker_nr))+"_right_norm.wav")[1]
     if dur == "long":
         n_stimulus = int(cfg["dur_stimulus_long"]*cfg["FS"])
     if dur == "short":
         n_stimulus = int(cfg["dur_stimulus_short"]*cfg["FS"])
-
-    if adapter == True:
-        adapter_left = ramp(wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"] + "/recordings/adapter_left.wav")[1])
-        adapter_right = ramp(wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"] + "/recordings/adapter_right.wav")[1])
-        n_adapter = len(adapter_left)
 
     # pick random segment from recorded stimulus
     start = np.random.randint(0, len(left)-n_stimulus)
@@ -72,4 +67,61 @@ def spectrum(x, FS, log_power=False):
         Z[Z < 1e-20] = 1e-20  # no zeros because we take logs
         Z = 10 * np.log10(Z)
 
-    return Z[0:-2], freqs[0:-2], phase[0:-2] # for some reason the last samples is really high and should be removed
+
+    return Z, freqs, phase # for some reason the last samples is really high and should be removed
+
+def smooth(x, window_len=11, window='hanning'):
+    """smooth the data using a window with requested size.
+
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal
+    (with the window size) in both ends so that transient parts are minimized
+    in the begining and end part of the output signal.
+
+    input:
+        x: the input signal
+        window_len: the dimension of the smoothing window; should be an odd integer
+        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
+            flat window will produce a moving average smoothing.
+
+    output:
+        the smoothed signal
+
+    example:
+
+    t=linspace(-2,2,0.1)
+    x=sin(t)+randn(len(t))*0.1
+    y=smooth(x)
+
+    see also:
+
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+    scipy.signal.lfilter
+
+    TODO: the window parameter could be the window itself if an array instead of a string
+    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    """
+
+    if x.ndim != 1:
+        print("smooth only accepts 1 dimension arrays.")
+        return
+
+    if x.size < window_len:
+        print("Input vector needs to be bigger than window size.")
+        return
+
+    if window_len < 3:
+        return x
+
+    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        print("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+
+    s = np.r_[x[window_len - 1:0:-1], x, x[-2:-window_len - 1:-1]]
+    # print(len(s))
+    if window == 'flat':  # moving average
+        w = np.ones(window_len, 'd')
+    else:
+        w = eval('np.' + window + '(window_len)')
+
+    y = np.convolve(w / w.sum(), s, mode='valid')
+    return y
