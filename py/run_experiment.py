@@ -2,8 +2,12 @@ import binaural_recording
 import perception_test
 import plotting
 import os
-os.environ["SUBJECT"] = "el80" # <-- Enter Subject here
+from prepare_experiment import generate_sequences
+os.environ["SUBJECT"] = "test01" # <-- Enter Subject here
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
+
+
+generate_sequences()
 
 
 # STEP 1: localization test under free field conditions
