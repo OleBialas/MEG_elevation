@@ -1,3 +1,8 @@
+"""
+Making and processing binaural recordings.
+Uses the environment variables EXPDIR and SUBJECT.
+All parameters are stored in a separate config file.
+"""
 import tdt
 import time
 from freefield_table import *
