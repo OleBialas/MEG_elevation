@@ -37,28 +37,20 @@ def plot_response(response):
 
 def plot_recordings():
     from matplotlib import pyplot as plt
-
+    # TODO: warum ist das spektrum vom adapter nach oben verschoben?
     cfg = json.load(open(os.environ["EXPDIR"] +"cfg/elevation.cfg"))
-    for speaker in cfg["speakers"]:
-        left = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_left.wav")
-        right = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_right.wav")
-        times = np.arange(0,10,10/len(left[1]))
-        Z_left, freqs, _ = spectrum(left[1], left[0],log_power=True)
-        Z_right, _, _ = spectrum(right[1], right[0], log_power=True)
+    for speaker in cfg["speakers"]+["adapter"]:
         fig, ax = plt.subplots(2,2, sharex="row", sharey="row")
-        fig.suptitle("Speaker Number "+speaker)
-        ax[0,0].plot(times, left[1])
-        ax[0,1].plot(times, right[1])
-        ax[1,0].plot(freqs, Z_left)
-        ax[1,1].plot(freqs, Z_right)
-    left = wavfile.read(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/adapter_left.wav")
-    right = wavfile.read(os.environ["EXPDIR"] +"data/"+ os.environ["SUBJECT"] + "/recordings/adapter_right.wav")
-    times = np.arange(0, 10, 10 / len(left[1]))
-    Z_left, freqs, _ = spectrum(left[1], left[0], log_power=True)
-    Z_right, _, _ = spectrum(right[1], right[0], log_power=True)
-    fig, ax = plt.subplots(2, 2, sharex="row", sharey="row")
-    fig.suptitle("Adapter")
-    ax[0, 0].plot(times, left[1])
-    ax[0, 1].plot(times, right[1])
-    ax[1, 0].plot(freqs, Z_left)
-    ax[1, 1].plot(freqs, Z_right)
+        fig.suptitle(speaker)
+        ax[0,0].set_ylim([-5,5])
+        ax[1,0].set_ylim([-130,-20])
+        for side, s in zip(["left", "right"], [0,1]):
+            if speaker == "adapter":
+                sound = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/adapter_"+side+".wav")
+            else:
+                sound = wavfile.read(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/recordings/speaker_"+speaker+"_"+side+"_norm.wav")
+            times = np.arange(0,10,10/len(sound[1]))
+            Z, freqs, _ = spectrum(sound[1], sound[0],log_power=True)
+            ax[0,s].plot(times, sound[1])
+            ax[1,s].plot(freqs, Z)
+    plt.show()
