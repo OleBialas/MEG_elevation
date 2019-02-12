@@ -6,6 +6,9 @@ from prepare_experiment import generate_sequences
 os.environ["SUBJECT"] = "test01" # <-- Enter Subject here
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
 
+# TODO: Warum ist das spektrum des adapters nach oben verschoben,
+# TODO: Besseres kriterium für auswertung von response finden
+# TODO: Trainingsblock für MEG-Messung
 
 generate_sequences()
 
@@ -18,6 +21,8 @@ plotting.plot_response(response)
 
 #STEP 3: record stimuli
 binaural_recording.recording()
+binaural_recording.normalize_recordings()
+binaural_recording.make_adapter()
 
 #STEP 4: plot recordings, the signal from right should be bigger than the signal from the left. spectra should look
 #similar with some variation across speakers and from left to right.
