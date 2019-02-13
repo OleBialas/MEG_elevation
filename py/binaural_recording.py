@@ -10,7 +10,6 @@ import json
 from scipy.io import wavfile
 import os
 import numpy as np
-from utilities import spectrum
 
 def recording():
     cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))

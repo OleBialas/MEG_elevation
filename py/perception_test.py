@@ -52,8 +52,10 @@ def headphones(dur_stimulus="long", adapter=False):
     if adapter:
         seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/headphones_adapter.txt")
     else:
-        seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/headphones.txt")
-
+        if dur_stimulus == "long":
+            seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/headphones_long.txt")
+        if dur_stimulus == "short":
+            seq = np.loadtxt(os.environ["EXPDIR"]+"data/"+os.environ["SUBJECT"]+"/lists/headphones_short.txt")
     count=0
     response = np.zeros([len(seq),3]) #output array with three columns: stimulus, response and time
     for i in seq:

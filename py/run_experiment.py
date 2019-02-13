@@ -1,9 +1,22 @@
+import sys
+sys.path.append("C:/Projects/MEG_Elevation/py")
 import binaural_recording
 import perception_test
 import plotting
 import os
-os.environ["SUBJECT"] = "el80" # <-- Enter Subject here
+<<<<<<< HEAD
+os.environ["SUBJECT"] = "el03" # <-- Enter Subject here
+=======
+from prepare_experiment import generate_sequences
+os.environ["SUBJECT"] = "el05" # <-- Enter Subject here
+>>>>>>> a8687be7289b91abce527e17845beb87513fdd7f
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
+
+# TODO: Warum ist das spektrum des adapters nach oben verschoben,
+# TODO: Besseres kriterium für auswertung von response finden --> In bins gruppieren, ersten x trials verwerfen??
+# TODO: Trainingsblock für MEG-Messung
+
+generate_sequences()
 
 
 # STEP 1: localization test under free field conditions
@@ -14,6 +27,8 @@ plotting.plot_response(response)
 
 #STEP 3: record stimuli
 binaural_recording.recording()
+binaural_recording.normalize_recordings()
+binaural_recording.make_adapter()
 
 #STEP 4: plot recordings, the signal from right should be bigger than the signal from the left. spectra should look
 #similar with some variation across speakers and from left to right.
@@ -33,7 +48,3 @@ response = perception_test.headphones(adapter=True)
 
 #STEP 7: plot response --> Errors for all speakers must be samller than 1 speaker distance!
 plotting.plot_response(response)
-
-
-
-
