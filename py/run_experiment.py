@@ -1,8 +1,10 @@
+import sys
+sys.path.append("C:/Projects/MEG_Elevation/py")
 import binaural_recording
 import perception_test
 import plotting
 import os
-os.environ["SUBJECT"] = "el80" # <-- Enter Subject here
+os.environ["SUBJECT"] = "el03" # <-- Enter Subject here
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
 
 
@@ -33,7 +35,3 @@ response = perception_test.headphones(adapter=True)
 
 #STEP 7: plot response --> Errors for all speakers must be samller than 1 speaker distance!
 plotting.plot_response(response)
-
-
-
-
