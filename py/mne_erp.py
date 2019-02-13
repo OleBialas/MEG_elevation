@@ -4,30 +4,20 @@ from mne import read_events, pick_types, pick_channels
 from matplotlib import pyplot as plt
 import numpy as np
 import os
+import json
 
-def get_epochs(subject, block, event_id, time, baseline,filt=(0.1,200), selection=None, reject={}, exclude_bads=True):
+def get_epochs(block, selection=None, reject=False, exclude_bads=False, filt=False):
 
-    """
-    Load raw data and compute epochs
-    :param subject: (str) subject name
-    :param block: (int) number of the block (name of the raw file is determined by subject name and block)
-    :param event_id: (dict) stimulus conditions with event code
-    :param time: (list/tuple) start and stop of epoch in seconds
-    :param baseline: (list/tuple) start and stop of baseline in seconds
-    :param selection: (list/None) channels included in the epochs, if None all channels are used
-    :param reject: (dict) amplitude above which epochs are rejected. Has to be specified for Mags, Grads
-    and EEG separately. If empty then no epochs are rejected
-    :param filt: (list/tuple) low and high cut off for filter. IF empty, no filter is used
-    """
-    raw = read_raw_fif(os.environ["DATADIR"]+subject+"/"+subject+str(block)+".fif", preload=True)
+    cfg = json.load(open(os.environ["EXPDIR"]+"cfg/epochs.cfg"))
+    raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+"_raw.fif", preload=True)
     if exclude_bads:
-        raw.info["bads"] += list(np.loadtxt(os.environ["DATADIR"]+subject+"/bad_channels.txt", dtype=str))
+        raw.info["bads"] += list(np.loadtxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/bad_channels.txt", dtype=str))
     picks = pick_types(raw.info, selection=selection)
     if filt:
         raw.filter(l_freq=0.1,h_freq=200)
-    events = read_events(os.environ["DATADIR"] + subject + "/" + subject + str(block) + "_cor.eve")
-    epochs = Epochs(raw, events, event_id=event_id, tmin=time[0], tmax=time[1],
-                            baseline=(baseline[0], baseline[1]),picks=picks, reject=reject, preload=True)
+    events = read_events(os.environ["DATADIR"] + os.environ["SUBJECT"] + "/" + os.environ["SUBJECT"] + str(block) + ".eve")
+    epochs = Epochs(raw, events, event_id=cfg["event_id"], tmin=cfg["time"][0], tmax=cfg["time"][1],
+                            baseline=(cfg["baseline"][0], cfg["baseline"][1]),picks=picks, reject=reject, preload=True)
 
     return epochs
 
