@@ -3,11 +3,11 @@ import perception_test
 import plotting
 import os
 from prepare_experiment import generate_sequences
-os.environ["SUBJECT"] = "test01" # <-- Enter Subject here
+os.environ["SUBJECT"] = "el05" # <-- Enter Subject here
 os.environ["EXPDIR"] = "C:/Projects/MEG_Elevation/"
 
 # TODO: Warum ist das spektrum des adapters nach oben verschoben,
-# TODO: Besseres kriterium für auswertung von response finden
+# TODO: Besseres kriterium für auswertung von response finden --> In bins gruppieren, ersten x trials verwerfen??
 # TODO: Trainingsblock für MEG-Messung
 
 generate_sequences()
