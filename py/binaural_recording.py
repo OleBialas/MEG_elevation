@@ -1,3 +1,8 @@
+"""
+Making and processing binaural recordings.
+Uses the environment variables EXPDIR and SUBJECT.
+All parameters are stored in a separate config file.
+"""
 import tdt
 import time
 from freefield_table import *
@@ -5,7 +10,6 @@ import json
 from scipy.io import wavfile
 import os
 import numpy as np
-from utilities import spectrum
 
 def recording():
     cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
