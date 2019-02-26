@@ -12,12 +12,12 @@ def write_events(blocks):
 
     for block in blocks:
         raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+".fif", preload=True)
-        events = read_events(raw)
+        events = read_triggers(raw)
         recoded_events = recode_triggers(events)
         recoded_events = recoded_events[recoded_events[:,0].argsort()] #sort array by time
         np.savetxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+".eve", recoded_events, fmt="%i")
 
-def read_events(raw, bitmasks=[64, 61440], stim_ch="STI101"):
+def read_triggers(raw, bitmasks=[64, 61440], stim_ch="STI101"):
 
     """
     Read trigger from stimulus channel data of raw file. The data is read for each
@@ -42,6 +42,8 @@ def read_events(raw, bitmasks=[64, 61440], stim_ch="STI101"):
                 n=idx
             else:
                 n+=1
+    events[:,0] += raw.first_samp
+
 
     return events
 
@@ -52,15 +54,16 @@ def recode_triggers(events, ignore=[8192], maxdist=50):
     of subsequent trigger pulses. Pulses are considert to belong to the
     same event if their distance is smaller than maxdist (in samples - defauls to 50).
     Triggercodes listet in ignore are copied into the output array without recoding
+
+    TODO: Last event in the list seems to be missung
     """
     first_of_the_seq=1
     trig_time=0
     trig_counter = 0
     trig_last = 0
-    for event in events:
-        if np.sum(event==events[0])==3:
-            recoded_events=np.array(event,ndmin=2)
-        elif event[2] in ignore:
+    recoded_events=np.array(events[0],ndmin=2)
+    for event in events[1:]:
+        if event[2] in ignore:
             recoded_events = np.append(recoded_events,np.array(event,ndmin=2), axis=0)
         else:
             if not first_of_the_seq: # still in the sequence
@@ -69,7 +72,7 @@ def recode_triggers(events, ignore=[8192], maxdist=50):
                 else: # found end of the sequence
                     first_of_the_seq=1
                     recoded_events = np.append(recoded_events,np.array([trig_time,event[1], trig_counter*10],ndmin=2),axis=0)
-            elif first_of_the_seq:
+            if first_of_the_seq:
                 trig_time = event[0]
                 trig_counter = 1
                 first_of_the_seq = 0
@@ -78,6 +81,6 @@ def recode_triggers(events, ignore=[8192], maxdist=50):
     return recoded_events
 
 if __name__ == "__main__":
-        os.environ["SUBJECT"] = "el05a"
-        blocks=["1s","2s","3s","1l","2l","3l"]
+        os.environ["SUBJECT"] = "el01b"
+        blocks=["1"]
         write_events(blocks)

@@ -1,37 +1,35 @@
 from mne.io import read_raw_fif
 from mne.epochs import Epochs
 from mne import read_events, pick_types, pick_channels
+from mne.preprocessing import maxwell_filter
 from matplotlib import pyplot as plt
 import numpy as np
 import os
 import json
 
-def get_epochs(block, selection=None, reject=False, exclude_bads=False, filt=False):
+
+def get_epochs(raws, blocks, selection=None, reject=None, exclude_bads=True, filt=True):
 
     cfg = json.load(open(os.environ["EXPDIR"]+"cfg/epochs.cfg"))
-    raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+"_raw.fif", preload=True)
-    if exclude_bads:
-        raw.info["bads"] += list(np.loadtxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/bad_channels.txt", dtype=str))
-    picks = pick_types(raw.info, selection=selection)
-    if filt:
-        raw.filter(l_freq=0.1,h_freq=200)
-    events = read_events(os.environ["DATADIR"] + os.environ["SUBJECT"] + "/" + os.environ["SUBJECT"] + str(block) + ".eve")
-    epochs = Epochs(raw, events, event_id=cfg["event_id"], tmin=cfg["time"][0], tmax=cfg["time"][1],
-                            baseline=(cfg["baseline"][0], cfg["baseline"][1]),picks=picks, reject=reject, preload=True)
+    epochs=[]
+    for raw, block in zip(raws,blocks):
+        if exclude_bads:
+            raw.info["bads"] = list(np.loadtxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+".bads", dtype=str))
+        if filt:
+            raw.filter(None,200)
+        picks = pick_types(raw.info, selection=selection)
+        if reject:
+            reject=cfg["reject"]
+        events = read_events(os.environ["DATADIR"] + os.environ["SUBJECT"] + "/" + os.environ["SUBJECT"] + str(block) + ".eve")
+        epochs.append(Epochs(raw, events, event_id=cfg["event_id"], tmin=cfg["time"][0], tmax=cfg["time"][1],
+                                baseline=(cfg["baseline"][0], cfg["baseline"][1]),picks=picks, reject=reject, preload=True))
 
     return epochs
 
 def get_evokeds(epochs, event_id, picks=None, exclude=[]):
-    """
-    Get evoked responses for specified events and channels
-    :param epochs: (mne.epochs.Epochs) Epoched data
-    :param event_id: (dict) Event name and code for which evoked response will be calculated
-    :param picks: ("mag", "grad", list of strings, None) Channels contained in the epoched data. If "mag" or "grad" all
-    magneto or gradiometer will be used. If a list of strings is given, evoked potentials will be computed for these channels.
-    Defaults to None which means all channels will be used
-    :return: list of evokeds
-    """
+
     evokeds=[]
+
     if picks == "mag":
         picks = pick_types(epochs.info, meg="mag")
     elif picks == "grad":
@@ -42,13 +40,8 @@ def get_evokeds(epochs, event_id, picks=None, exclude=[]):
         evokeds.append(epochs[event].average(picks))
     return evokeds
 
-def get_evokeds_rms(evokeds, event_id):
-    """
-    compute root mean square over all channels for a list of evoked responses
-    :param evokeds: (list of mne.Evoked) evoked responses
-    :param event_id: (dict) event names and codes
-    :return: list containing the root mean square over all channels for each event
-    """
+def evoked_rms(evokeds, event_id):
+
     evokeds_rms = []
     n_channels = len(evokeds[0].data)
     n_samples = len(evokeds[0].data[0])

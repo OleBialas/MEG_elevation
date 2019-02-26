@@ -1,31 +1,38 @@
 import os
 import json
-from mne.io import read_raw_fif
-from mne import pick_types, read_events, pick_channels
-from mne.epochs import Epochs
-from mne.viz import plot_evoked_topo
+import sys
+sys.path.append(os.environ["EXPDIR"]+"py/")
+from mne_erp import *
+from mne_preprocessing import *
+cfg = json.load(open(os.environ["EXPDIR"]+"cfg/elevation.cfg"))
+os.environ["SUBJECT"] = "el04a"
 
-os.environ["SUBJECT"] = "el99p" # <-- Enter Subject here
 
-cfg = json.load(open(os.environ["EXPDIR"]+"cfg/epochs.cfg"))
+raws = load_raws(cfg["meg_blocks"])
+raws_sss = maxwell_filt(raws)
 
-block = 1
-# STEP 1: Plot raw data and identify bad channels
-raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+"_raw.fif", preload=True)
-events = read_events(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+"_cor.eve")
-raw.filter(0.1 , 200)
-raw.plot()
+epochs = get_epochs(cfg["meg_blocks"], reject=True, exclude_bads=True, filt=True)
 
-#negative selection
-raw.info["bads"]=["MEG2141","MEG2142","MEG2143","MEG1921"]
+#concatenate epochs:
+
+
+
+block = "1"
+raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+".fif", preload=True)
+events = read_events(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+".eve")
+
+raw.filter(None , 200)
+picks = pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude='bads')
+epochs = Epochs(raw,events,tmin=-0.1,tmax=1.0,baseline=(-0.1,0), preload=True)
+
+
+
+#raw.plot()
+#raw.info["bads"]=list(np.loadtxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+".bads",dtype=str))
 picks=pick_types(raw.info)
-epochs = Epochs(raw, events, cfg["event_id"], cfg["time"][0], cfg["time"][1], baseline=(cfg["baseline"][0],cfg["baseline"][1]), picks=picks, preload=True)
+epochs = Epochs(raw, events, cfg["event_id"], cfg["time"][0],cfg["time"][1], baseline=(cfg["baseline"][0],cfg["baseline"][1]), preload=True)
 
 
-#positive selection:
-good_chs = ["MEG0233", "MEG1621", "MEG0231", "MEG0212", "MEG0243", "MEG1643", "MEG0222", "MEG1613"]
-picks = pick_channels(raw.info["ch_names"],include=good_chs)
-epochs = Epochs(raw, events, cfg["event_id"], cfg["time"][0], cfg["time"][1], baseline=None, preload=True, reject=cfg["reject"], picks=picks)
 
 
 for i in sorted(cfg["event_id"].keys()):
