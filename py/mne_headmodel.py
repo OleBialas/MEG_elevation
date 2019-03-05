@@ -1,23 +1,20 @@
-# coding=utf-8
+import os
+import json
+import sys
+sys.path.append(os.environ["PYDIR"])
 from mne import read_bem_surfaces, read_trans, setup_source_space, make_forward_solution, make_bem_solution, \
      write_forward_solution, compute_covariance, write_cov
 from mne.minimum_norm import make_inverse_operator, write_inverse_operator
+from mne.io import read_raw_fif
 import numpy as np
 from copy import deepcopy
-import os
-os.environ["SUBJECTS_DIR"] = "C:\\Projects\\Elevation\\bennewitz\\freesurfer"
-expdir = "C:/Projects/Elevation/bennewitz/"
+from mne_preprocessing import load_epochs
 
 
-def inverse_operator(epochs, subject, tnoise=(0.9,1), part="b", write_inv=True, write_fwd=True, write_cov=True, mindist=2):
 
-    trans = read_trans(expdir + subject + part + "/" + subject + part + "2_raw-trans.fif")
-    src = setup_source_space(subject=subject, spacing='oct6', add_dist=False)
-    surfs = read_bem_surfaces(expdir + "freesurfer/" + subject + "/bem/" + subject + "-5120-bem.fif")
-    bem = make_bem_solution(surfs)
-    fwd = make_forward_solution(epochs.info, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=mindist, n_jobs=2)
-    if write_fwd:
-        write_forward_solution(expdir + subject+part + "/" + subject+part + "-fwd.fif", fwd, overwrite=True)
+
+def inverse_operator(epochs, tnoise=(0.9,1), part="b", write_inv=True, write_fwd=True, write_cov=True, mindist=2):
+
     noise_cov = compute_covariance(epochs, tmin=tnoise[0], tmax=tnoise[1], method="shrunk")
     if write_cov:
         write_cov(expdir + subject+part + "/" + subject+part + "-fwd.fif", noise_cov)
@@ -25,6 +22,29 @@ def inverse_operator(epochs, subject, tnoise=(0.9,1), part="b", write_inv=True, 
     if write_inv:
         write_inverse_operator(expdir + subject+part + "/" + subject+part + "-inv.fif", inv)
     return inv
+
+
+def make_fwd(write=True, mindist=2):
+
+    info = read_raw_fif(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"1l.fif")).info
+    trans=get_trans()
+    subject = os.environ["SUBJECT"][:-1]
+    src = setup_source_space(subject=subject, spacing='oct6', add_dist=False)
+    surfs = read_bem_surfaces(os.path.join(os.environ["SUBJECTS_DIR"], subject, "bem", subject + "-5120-bem.fif"))
+    bem = make_bem_solution(surfs)
+    fwd = make_forward_solution(info, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=mindist, n_jobs=2)
+    if write:
+        write_forward_solution(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"),fwd)
+    return fwd
+
+
+def get_trans():
+    files = os.listdir(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"]))
+    for file in files:
+        if "trans" in file:
+            trans = read_trans(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],file))
+    return trans
+
 
 def scale_forward_model(info, subject):
 

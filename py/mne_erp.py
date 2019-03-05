@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 import json
-
+plt.ion()
 
 def get_epochs(raws, blocks, selection=None, reject=None, exclude_bads=True, filt=True):
 
@@ -40,14 +40,14 @@ def get_evokeds(epochs, event_id, picks=None, exclude=[]):
         evokeds.append(epochs[event].average(picks))
     return evokeds
 
-def evoked_rms(evokeds, event_id):
+def evoked_rms(evokeds, event_id, ch_type="mag"):
 
     evokeds_rms = []
     n_channels = len(evokeds[0].data)
     n_samples = len(evokeds[0].data[0])
     for evoked in evokeds:
         ch_rms = np.zeros(n_samples)
-        for ch in evoked.data:
+        for ch in evoked.pick_types(meg="mag").data:
             ch_rms += np.square(ch)
         ch_rms = np.sqrt((ch_rms/n_channels))
         evokeds_rms.append(ch_rms)

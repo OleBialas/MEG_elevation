@@ -2,18 +2,26 @@ import os
 import json
 import sys
 sys.path.append(os.environ["EXPDIR"]+"py/")
-from mne_erp import *
-from mne_preprocessing import *
+from mne.io import read_raw_fif
+from mne.epochs import Epochs
+from mne_erp import evoked_rms, plot_rms_mag_grad
+from mne import read_events
+import numyp as np
 cfg = json.load(open(os.environ["EXPDIR"]+"cfg/elevation.cfg"))
 os.environ["SUBJECT"] = "el04a"
 
+for block in cfg["meg_blocks"]:
+	raw = read_raw_fif(os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+block+".fif"))
+	raw.info["bads"] = list(np.loadtxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+".bads", dtype=str)) 
+	events = read_events(os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+block+".eve"))
+	epochs = Epochs(raw, events, cfg["epochs"]["event_id"], cfg["epochs"]["time"][0],cfg["epochs"]["time"][1],
+		baseline=(cfg["epochs"]["baseline"][0],cfg["epochs"]["baseline"][1]), reject=cfg["epochs"]["reject"])
+	evokeds = [epochs[event].average() for event in sorted(cfg["epochs"]["event_id"].keys())]
+	rms_mag = evoked_rms(evokeds, cfg["epochs"]["event_id"], ch_type="mag")
+	rms_grad = evoked_rms(evokeds, cfg["epochs"]["event_id"], ch_type="grad")
+	plot_rms_mag_grad(rms_grad, rms_mag, evokeds[0].times, cfg["epochs"]["event_id"], title=os.environ["SUBJECT"]+block)
 
-raws = load_raws(cfg["meg_blocks"])
-raws_sss = maxwell_filt(raws)
-
-epochs = get_epochs(cfg["meg_blocks"], reject=True, exclude_bads=True, filt=True)
-
-#concatenate epochs:
+#
 
 
 
