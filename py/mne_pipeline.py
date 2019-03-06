@@ -8,29 +8,50 @@ from mne.minimum_norm import make_inverse_operator, apply_inverse
 from mne.viz import plot_snr_estimate
 from matplotlib import pyplot as plt
 import numpy as np
-
+import json
+cfg = json.load(open(os.path.join(os.environ["EXPDIR"],"cfg","elevation.cfg")))
+blocks = cfg["meg_blocks"][:-3]
 os.environ["SUBJECT"] = "el04a"
-block="1s"
-epochs = load_epochs(block)
+if os.environ["SUBJECT"] == "el01b":
+	blocks = ["1","2","3","4","5","6"]
 
-evoked = epochs.average()
-evoked.interpolate_bads(origin="auto")
 fwd = read_forward_solution(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"))
-noise_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"))
-data_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_data_cov.fif"))
-inverse_operator = make_inverse_operator(epochs.info, fwd, noise_cov)
-src = inverse_operator['src']  # get the source space
+evokeds_stc=[]
+n_trials = [0, 0, 0, 0]
 
-label_name = "transversetemporal-rh"
-label = read_labels_from_annot("el04", regexp=label_name)[0]
-filters = make_lcmv(epochs.info, fwd, data_cov, reg=0.05, noise_cov=noise_cov, rank=None)
-stc = apply_lcmv(evoked, filters, max_ori_out='signed')
+# generate label
+roi=["G_temp_sup-G_T_transv", "G_temp_sup-Plan_tempo"]
+labels=[]
+for i in roi:
+	labels += read_labels_from_annot(os.environ["SUBJECT"][:-1], parc='aparc.a2009s', hemi="both", regexp=i)
+label = labels[0]+labels[1]+labels[2]+labels[3]
+
+
+for block in blocks: # average over all blocks
+	
+	epochs = load_epochs(block)
+	evokeds =[epochs[event].average() for event in epochs.event_id.keys()]
+	noise_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"))
+	data_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_data_cov.fif"))
+	inverse_operator = make_inverse_operator(epochs.info, fwd, noise_cov)
+	filters = make_lcmv(epochs.info, fwd, data_cov, reg=0.05, noise_cov=noise_cov, rank=None, label=label)
+	
+	for evoked,count in zip(evokeds,range(len(evokeds))):
+		n_trials[count] += evoked.nave
+		if block == cfg["meg_blocks"][0]:
+			evokeds_stc.append(apply_lcmv(evoked, filters, max_ori_out='signed'))
+		else:
+			evokeds_stc[count] += apply_lcmv(evoked, filters, max_ori_out='signed').data
 
 fig, ax = plt.subplots(2, sharex=True, sharey=True)
-ax[0].plot(1e3 * stc.times, stc.lh_data.T)
-ax[1].plot(1e3 * stc.times, stc.rh_data.T)
+for stc, event in zip(evokeds_stc, epochs.event_id.keys()):
+	ax[0].plot(1e3 * stc.times, np.mean(stc.lh_data, axis=0), label=event)
+	ax[0].set_title("Left Hemisphere")
+	ax[1].plot(1e3 * stc.times, np.mean(stc.rh_data,axis=0), label=event)
+	ax[1].set_title("Right Hemisphere")
 plt.xlabel('time (ms)')
 plt.ylabel('LCMV value')
+plt.legend()
 plt.show()
 
 
