@@ -192,11 +192,4 @@ def scale(surface, cardinals_subject,reference):
     return surface
 
 if __name__ == "__main__":
-    from mne.io import read_raw_fif
-    from mne.epochs import Epochs
-    from mne import read_events
-    subject="el01"
-    raw = read_raw_fif("C:/Projects/Elevation/bennewitz/el01b/el01b1.fif", preload=True)
-    events = read_events("C:/Projects/Elevation/bennewitz/el01b/el01b1_cor.eve")
-    epochs = Epochs(raw, events, tmin=-0.1, tmax=1.0, baseline=(-0.1,0), preload=True)
-    inverse_operator(epochs,subject)
+    make_fwd()

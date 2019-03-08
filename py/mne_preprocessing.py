@@ -56,3 +56,5 @@ def load_concatenated_raws(blocks):
 	raw, events = concatenate_raws(raws, events_list=events_list)
 	return raw
  
+if __name__ =="__main__":
+	write_covariance(cfg["meg_blocks"])
