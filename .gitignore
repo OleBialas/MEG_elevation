@@ -3,3 +3,6 @@ py/.idea/
 py/__pycache__/
 docs/
 py/scratch.py
+freesurfer
+rawdir
+el*
