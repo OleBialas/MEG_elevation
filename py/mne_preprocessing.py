@@ -19,11 +19,13 @@ def load_raw(block, filt=True, reject_bads=True):
 	return raw
 
 def load_epochs(block, filt=True, reject_bads=True):
+	
 	cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
 	raw = load_raw(block, reject_bads)
 	events=read_events(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+".eve"))
 	epochs = Epochs(raw, events, cfg["epochs"]["event_id"], cfg["epochs"]["time"][0],cfg["epochs"]["time"][1],
 		baseline=(cfg["epochs"]["baseline"][0],cfg["epochs"]["baseline"][1]), reject=cfg["epochs"]["reject"])
+	del raw
 	return epochs
 
 
@@ -37,7 +39,7 @@ def write_covariance(method="shrunk"):
 		write_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"),noise_cov)
 		write_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_data_cov.fif"),data_cov)
 
-def maxwell_filt(block, write=True, destination_block="1s"):
+def maxfilt(block, write=True, destination_block="1s"):
 
 	raw = load_raw(block)
 	destination = os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+destination_block+".fif"
@@ -47,14 +49,10 @@ def maxwell_filt(block, write=True, destination_block="1s"):
 
 	return raws_sss
 
-def concatenate_raws(blocks, write=True):
+def load_concatenated_raws(blocks):
 
 	fifname = os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+"%s_maxfilt.fif")
 	raws = [read_raw_fif(fifname % block, verbose='error') for block in blocks]
 	raw = concatenate_raws(raws)
-	if write:
-		raw.save(os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+"all_l.fif"))
 	return raw
-
-if __name__ == "__main__":
-	write_covariance()
+ 
