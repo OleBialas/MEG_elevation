@@ -11,11 +11,11 @@ def write_events(blocks):
     """
 
     for block in blocks:
-        raw = read_raw_fif(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+".fif", preload=True)
+        raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".fif"), preload=True)
         events = read_triggers(raw)
         recoded_events = recode_triggers(events)
         recoded_events = recoded_events[recoded_events[:,0].argsort()] #sort array by time
-        np.savetxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+str(block)+".eve", recoded_events, fmt="%i")
+        np.savetxt(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".eve"), recoded_events, fmt="%i")
 
 def read_triggers(raw, bitmasks=[64, 61440], stim_ch="STI101"):
 
@@ -81,6 +81,5 @@ def recode_triggers(events, ignore=[8192], maxdist=50):
     return recoded_events
 
 if __name__ == "__main__":
-        os.environ["SUBJECT"] = "el01b"
-        blocks=["1"]
+        blocks=["1s", "2s", "3s", "1l", "2l", "3l"]
         write_events(blocks)

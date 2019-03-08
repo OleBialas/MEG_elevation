@@ -26,7 +26,7 @@ def inverse_operator(epochs, tnoise=(0.9,1), part="b", write_inv=True, write_fwd
 
 def make_fwd(write=True, mindist=2):
 
-    info = read_raw_fif(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"1l.fif")).info
+    info = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".fif")).info
     trans=get_trans()
     subject = os.environ["SUBJECT"][:-1]
     src = setup_source_space(subject=subject, spacing='oct6', add_dist=False)
@@ -34,15 +34,15 @@ def make_fwd(write=True, mindist=2):
     bem = make_bem_solution(surfs)
     fwd = make_forward_solution(info, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=mindist, n_jobs=2)
     if write:
-        write_forward_solution(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"),fwd)
+        write_forward_solution(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"),fwd)
     return fwd
 
 
 def get_trans():
-    files = os.listdir(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"]))
+    files = os.listdir(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"]))
     for file in files:
         if "trans" in file:
-            trans = read_trans(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],file))
+            trans = read_trans(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],file))
     return trans
 
 

@@ -6,12 +6,13 @@ from mne.io import read_raw_fif
 from mne.epochs import Epochs
 from mne_erp import evoked_rms, plot_rms_mag_grad
 from mne import read_events
-import numyp as np
+import numpy as np
 cfg = json.load(open(os.environ["EXPDIR"]+"cfg/elevation.cfg"))
-os.environ["SUBJECT"] = "el04a"
+os.environ["SUBJECT"] = "el05a"
 
 for block in cfg["meg_blocks"]:
-	raw = read_raw_fif(os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+block+".fif"))
+	raw = read_raw_fif(os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+block+".fif"), preload=True)
+	raw.filter(None, 200)
 	raw.info["bads"] = list(np.loadtxt(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+".bads", dtype=str)) 
 	events = read_events(os.path.join(os.environ["DATADIR"]+os.environ["SUBJECT"]+"/"+os.environ["SUBJECT"]+block+".eve"))
 	epochs = Epochs(raw, events, cfg["epochs"]["event_id"], cfg["epochs"]["time"][0],cfg["epochs"]["time"][1],
