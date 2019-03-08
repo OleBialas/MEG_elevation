@@ -10,7 +10,7 @@ cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
 
 def load_raw(block, filt=True, reject_bads=True):
 
-    raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".fif"), preload=True)
+	raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".fif"), preload=True)
 	if filt:
 		raw.filter(None,200)
 	if reject_bads:

@@ -87,8 +87,8 @@ def beamformer(blocks, parc='aparc.a2009s', roi=["G_temp_sup-G_T_transv", "G_tem
 		
 		epochs = load_epochs(block)
 		evokeds =[epochs[event].average() for event in epochs.event_id.keys()]
-		noise_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"))
-		data_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_data_cov.fif"))
+		noise_cov = read_cov(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"))
+		data_cov = read_cov(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_data_cov.fif"))
 		filters = make_lcmv(epochs.info, fwd, data_cov, reg=0.05, noise_cov=noise_cov, rank=None, label=label)
 		
 		for evoked,count in zip(evokeds,range(len(evokeds))):
@@ -110,13 +110,13 @@ def beamformer(blocks, parc='aparc.a2009s', roi=["G_temp_sup-G_T_transv", "G_tem
 def source_estimate(blocks, method="dSPM", snr=3., plot=True):
 
 	try:
-		fwd = read_forward_solution(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"))
+		fwd = read_forward_solution(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"))
 	except:
 		print("Forward solution must be computed before running this ananlysis")
 	for block in blocks: # average over all blocks
 		epochs = load_epochs(block)
 		evokeds =[epochs[event].average() for event in epochs.event_id.keys()]
-		noise_cov = read_cov(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"))
+		noise_cov = read_cov(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_noise_cov.fif"))
 		inverse_operator = make_inverse_operator(epochs.info, fwd, noise_cov)
 		count=0
 		for evoked in evokeds:
@@ -133,7 +133,7 @@ def source_estimate(blocks, method="dSPM", snr=3., plot=True):
 			brain = stc.plot(hemi=hemi, initial_time=time_max)
 			brain.add_foci(vertno_max, coords_as_verts=True, hemi=hemi, color='blue', scale_factor=0.6, alpha=0.5)
 			brain.add_text(0.1, 0.9, '%s (plus location of maximal activation)' % method, 'title', font_size=14)
-			brain.save_image(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_%s_.jpg" % method))
+			brain.save_image(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_%s_.jpg" % method))
 		mlab.show()
 	
 	return stc
