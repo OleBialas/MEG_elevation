@@ -68,7 +68,7 @@ def average_over_subjects(subjects, blocks, stop=None):
 def beamformer(blocks, parc='aparc.a2009s', roi=["G_temp_sup-G_T_transv", "G_temp_sup-Plan_tempo"], plot=True):
 
 	try:
-		fwd = read_forward_solution(os.path.join(os.environ["DATADIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"))
+		fwd = read_forward_solution(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".fwd"))
 	except:
 		print("Forward solution must be computed before running this ananlysis")
 	
