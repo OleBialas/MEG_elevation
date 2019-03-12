@@ -29,10 +29,11 @@ def average_over_subjects(subjects, blocks, stop=None):
 				average["lh"].append(np.mean(stc[i].lh_data, axis=0))
 				average["rh"].append(np.mean(stc[i].rh_data, axis=0))
 			else:
-				average["lh"] += np.mean(stc[i].lh_data, axis=0)
-				average["rh"] += np.mean(stc[i].rh_data, axis=0)
-		average["lh"] /= len(subjects)
-		average["rh"] /= len(subjects)
+				average["lh"][i] += np.mean(stc[i].lh_data, axis=0)
+				average["rh"][i] += np.mean(stc[i].rh_data, axis=0)
+	for i in range(len(stc)):
+		average["lh"][i] /= len(subjects)
+		average["rh"][i] /= len(subjects)
 
 
 	if stop:
@@ -43,9 +44,9 @@ def average_over_subjects(subjects, blocks, stop=None):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)    # The big subplot
 	ax1 = fig.add_subplot(211)
-	ax1.set_ylim(0.05,0.65)
+	#ax1.set_ylim(0.05,0.3)
 	ax2 = fig.add_subplot(212)
-	ax2.set_ylim(0.05,0.65)
+	#ax2.set_ylim(0.05,0.3)
 	# Turn off axis lines and ticks of the big subplot
 	ax.spines['top'].set_color('none')
 	ax.spines['bottom'].set_color('none')
@@ -99,8 +100,8 @@ def beamformer(blocks, parc='aparc.a2009s', roi=["G_temp_sup-G_T_transv", "G_tem
 			else:
 				evokeds_stc[count] += apply_lcmv(evoked, filters, max_ori_out='signed').data
 				print("adding")
-		for stc in evokeds_stc:
-			stc.data /= len(blocks) #divide by number of blocks
+	for stc in evokeds_stc:
+		stc.data /= len(blocks) #divide by number of blocks
 
 	if plot:
 		plot_source_time_course(evokeds_stc, epochs.event_id, mean=True)
@@ -161,6 +162,6 @@ def plot_source_time_course(stc_list, event_id, mean=False):
 
 if __name__ == "__main__":
 
-	subjects=["el04a","el05a"]
-	blocks=["1l","2l","3l"]
+	subjects=["el05a"]
+	blocks=["1s","2s","3s"]
 	average_over_subjects(subjects, blocks)
