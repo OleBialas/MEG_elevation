@@ -1,0 +1,20 @@
+from mne.io import read_raw_fif
+import os
+import numpy as np
+
+
+subject="ac01a"
+size= "54"
+reps = 2
+blocks = 3
+mean_electrodes = np.zeros([64,3])
+
+for r in range(1,reps+1):
+	for b in range(1,blocks+1):
+		raw = read_raw_fif(os.path.join(os.environ["RAWDIR"],subject,subject+str(b*r)+"_size"+size+".fif"))
+		electrodes = np.array([],ndmin=2)
+		for ch in raw.info["chs"]:
+			if "EEG" in ch["ch_name"] : # is an electrode
+				electrodes = np.append(electrodes, np.array(ch["loc"][0:3],ndmin=2), axis=1)
+				if r=1 and b=1:
+					mean_electrodes+=electrodesexit()
