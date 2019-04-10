@@ -2,6 +2,49 @@ import os
 from mne import find_events, pick_channels
 from mne.io import read_raw_fif
 import numpy as np
+from mne import read_events
+
+
+def remove_buttons_and_targets(blocks, write=True):
+    """
+    throw the targets, then throw events away that are corrupted by motor-activity from pressing the button
+    """
+    for block in blocks:
+        events, targets = get_oneback_targets(block)
+        events = np.delete(events, targets, axis=0) # remove targets
+        i=0
+        while i+1<len(events):
+            i+=1
+            if events[i][2] == 8192 and events[i][0]-events[i-1][0]<1000:
+                print("remove event at %s" %(events[i-1][0]))
+                events = np.delete(events, i, axis=0)
+        if write:
+            np.savetxt(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+"_cor.eve"), events, fmt="%i")
+
+
+def get_oneback_targets(block):
+
+    corrects=[]
+    false_positives=[]
+    false_negatives=[]
+    targets=[]
+    events=read_events(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+".eve"))
+    for i in range(1,len(events)):
+        if events[i][2] == events[i-1][2] and events[i][2] != 8192: #this is a target
+            targets.append(i)
+            if events[i+1][2] or events[i+2][2] == 8192:#target was recognized
+                corrects.append(i) 
+            else: #target was not recognized
+                false_negatives.append(i)
+        
+        if events[i][2] == 8192 and (events[i][0]-events[i-1][0])<1500 and events[i-1][2] != events[i-2][2]:
+            # button was pressed and it was not for a target or to end a break
+            false_positives.append(i)
+
+    print("of the %s trials in this block, %s were answered correctly. There were %s false positive responses" %(len(targets), len(corrects), len(false_positives)))
+
+    return events, targets
+
 
 
 def write_events(blocks):

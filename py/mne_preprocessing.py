@@ -1,4 +1,4 @@
-from mne.io import read_raw_fif
+from mne.io import read_raw_fif, read_raw_brainvision
 from mne import concatenate_raws, read_events, pick_types
 from mne.epochs import Epochs
 from mne import compute_covariance, write_cov, compute_proj_raw
@@ -7,22 +7,38 @@ import os
 import json
 cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation.cfg"))
 
+def filt_eeg(subjects, condition):
 
-def load_raw(block, filt=True, reject_bads=True):
+	#load EEG-data filter and save
+	for subject in subjects:
+		os.environ["SUBJECT"] = subject
+		blocks=[]
+		files = os.listdir(os.path.join(os.environ["RAWDIR"],os.environ["SUBJECT"]))
+		for file in files:
+			if condition+".vhdr" in file:
+				blocks.append(file)
+		count=1
+		for block in blocks:
+			raw=read_raw_brainvision(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],block), preload=True).filter(1,30)
+			raw.save(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_"+str(count)+condition+"_filt.raw"))
+			count+=1
 
-	raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".fif"), preload=True)
+def load_raw(block, filt=True, reject_bads=True, write=True):
+
+	raw = read_raw_fif(os.path.join(os.environ["RAWDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+".fif"), preload=True)
 	if filt:
 		raw.filter(None,200)
 	if reject_bads:
 		raw.info["bads"] = list(np.loadtxt(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+".bads"), dtype=str))
 		raw.pick_types()
 		raw.info.normalize_proj()
+		raw.save(os.path.join(os.environ["EXPDIR"], os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+"_filt.fif"))
 	return raw
 
 def load_epochs(block, filt=True, reject_bads=True):
 	
-	raw = load_raw(block, reject_bads)
-	events=read_events(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+".eve"))
+	raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+"_filt.fif"), preload=True)	
+	events=read_events(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_cor.eve"))
 	epochs = Epochs(raw, events, cfg["epochs"]["event_id"], cfg["epochs"]["time"][0],cfg["epochs"]["time"][1],
 		baseline=(cfg["epochs"]["baseline"][0],cfg["epochs"]["baseline"][1]), reject=cfg["epochs"]["reject"])
 	del raw
@@ -57,4 +73,9 @@ def load_concatenated_raws(blocks):
 	return raw
  
 if __name__ =="__main__":
-	write_covariance(cfg["meg_blocks"])
+	subjects=["el04a","el05a"]
+	blocks=cfg["meg_blocks"]
+	for subject in subjects:
+		os.environ["SUBJECT"] = subject
+		for block in blocks:
+			load_raw(block)
