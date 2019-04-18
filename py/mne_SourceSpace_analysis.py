@@ -64,7 +64,7 @@ def average_over_subjects(subjects, blocks, stop=None):
 	ax1.legend()
 	ax2.legend()
 	plt.show()
-
+q
 
 def beamformer(blocks, parc='aparc.a2009s', roi=["G_temp_sup-G_T_transv", "G_temp_sup-Plan_tempo"], plot=True):
 

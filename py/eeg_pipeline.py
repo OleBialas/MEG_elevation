@@ -12,6 +12,7 @@ from mne.channels import read_montage
 subjects=["eegl01","eegl02","eegl03","eegl04","eegl05","eegl06","eegl07","eegl08"]
 condition="Augenmitte"
 n_blocks=4
+montage = read_montage("easycap-M10")
 # load data for all subjects in dictionary:
 raws=[]
 for subject in subjects:

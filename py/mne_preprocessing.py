@@ -20,7 +20,7 @@ def filt_eeg(subjects, condition):
 		count=1
 		for block in blocks:
 			raw=read_raw_brainvision(os.path.join(os.environ["EXPDIR"],os.environ["RAWDIR"],os.environ["SUBJECT"],block), preload=True).filter(1,30)
-			raw.save(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_"+str(count)+condition+"_filt.raw"))
+			raw.save(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_"+str(count)+condition+"_filt.raw"), overwrite=True)
 			count+=1
 
 def load_raw(block, filt=True, reject_bads=True, write=True):
@@ -73,9 +73,6 @@ def load_concatenated_raws(blocks):
 	return raw
  
 if __name__ =="__main__":
-	subjects=["el04a","el05a"]
-	blocks=cfg["meg_blocks"]
-	for subject in subjects:
-		os.environ["SUBJECT"] = subject
-		for block in blocks:
-			load_raw(block)
+	#weird stuff happens for subject 10
+	subjects = ["eegl09","eegl11","eegl12","eegl13","eegl14","eegl15","eegl16","eegl17","eegl18","eegl19","eegl20","eegl21"]
+	filt_eeg(subjects, condition="Augenmitte")
