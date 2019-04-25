@@ -1,6 +1,6 @@
 from mne.io import read_raw_fif
 from mne.epochs import Epochs
-from mne import read_events, pick_types, pick_channels
+from mne import read_events, pick_types, pick_channels, find_events, concatenate_raws
 from mne.preprocessing import maxwell_filter
 from matplotlib import pyplot as plt
 import numpy as np
@@ -8,6 +8,33 @@ import os
 import json
 plt.ion()
 
+def eeg_evoked_grand_avg(subjects, condition, include_chs=[], event_id=None):
+
+    """
+    Load and concatenate filtered raw data and compute evoked response
+    returns evoked response for all events in the data_cov
+
+    Parameters:
+    subjects (list of str): names of the subjects to include, if empty, list is read from a text file containing all subjects
+    condition (str): name of the experimental condition
+    event_id (list of str | None): event types to include in the epoched data, if None (=default) take all events
+    include_chs (list of str): names of the channels to include, if empty (=default) include all channels
+    """
+    if not subjects:
+        subjects = np.loadtxt(os.environ["EXPDIR"] + "/cfg/eeg_subjects.cfg", dtype="str")
+    cfg = json.load(open(os.environ["EXPDIR"] + "/cfg/elevation_eeg.cfg"))
+    rms_all_subjects = { subject: list([]) for subject in subjects}
+    for subject in subjects:
+    	os.environ["SUBJECT"] = subject
+    	raws=[]
+    	for i in range(1,cfg["blocks_per_condition"]+1):
+    		raws.append(read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_"+str(i)+condition+"_filt.raw")))
+    raw = concatenate_raws(raws)
+    events = find_events(raw)
+    picks = pick_channels(raw.info["ch_names"],include=include_chs) # Fz =5, Fc3 = 43, Fc4=44, Cz=14, Pz=25
+    epochs = Epochs(raw, events, event_id, tmin=cfg["epochs"]["time"][0], tmax=cfg["epochs"]["time"][1],
+                baseline=tuple(cfg["epochs"]["baseline"]),picks=picks, reject=cfg["epochs"]["reject"], preload=True)
+    return epochs
 
 def evoked_rms(evokeds, event_id, ch_type="mag"):
 
@@ -37,4 +64,3 @@ def plot_rms_mag_grad(data_grad, data_mag, time, event_id, title=""):
         ax[1].set_title("Magnetometer")
     plt.legend()
     plt.show()
-

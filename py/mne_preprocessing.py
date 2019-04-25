@@ -36,8 +36,8 @@ def load_raw(block, filt=True, reject_bads=True, write=True):
 	return raw
 
 def load_epochs(block, filt=True, reject_bads=True):
-	
-	raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+"_filt.fif"), preload=True)	
+
+	raw = read_raw_fif(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+str(block)+"_filt.fif"), preload=True)
 	events=read_events(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+block+"_cor.eve"))
 	epochs = Epochs(raw, events, cfg["epochs"]["event_id"], cfg["epochs"]["time"][0],cfg["epochs"]["time"][1],
 		baseline=(cfg["epochs"]["baseline"][0],cfg["epochs"]["baseline"][1]), reject=cfg["epochs"]["reject"])
@@ -71,7 +71,7 @@ def load_concatenated_raws(blocks):
 	events_list = [read_events(filename+block+".eve") for block in blocks]
 	raw, events = concatenate_raws(raws, events_list=events_list)
 	return raw
- 
+
 if __name__ =="__main__":
 	#weird stuff happens for subject 10
 	subjects = ["eegl09","eegl11","eegl12","eegl13","eegl14","eegl15","eegl16","eegl17","eegl18","eegl19","eegl20","eegl21"]
