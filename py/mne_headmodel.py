@@ -10,7 +10,30 @@ import numpy as np
 from copy import deepcopy
 from mne_preprocessing import load_epochs
 
+"""
+#average electrode measurements:
+def average_locations(blocks, type):
+    caps=["ac01a","ac02a"]
+    sizes = ["54", "56"]
+    reps = 2
+    blocks = 3
 
+    for cap, size in zip(caps, sizes):
+    	for r in range(1,reps+1):
+    		for b in range(1,blocks+1):
+    			raw = read_raw_fif(os.path.join(os.environ["RAWDIR"],cap,cap+str(b*r)+"_size"+size+".fif"))
+    			eeg_channels = list(filter(lambda ch: "EEG" in ch["ch_name"], raw.info["chs"])) # all eeg channels
+    			info=create_info(ch_names=[ch["ch_name"] for ch in eeg_channels], sfreq=1000, ch_types="eeg")
+                if r == 1 and b==1:
+                    locs = np.array([ch["loc"] for ch in eeg_channels])  #positions of eeg channels
+                else:
+                    locs+= np.array([ch["loc"] for ch in eeg_channels])
+    	locs /= reps*blocks
+    	for ch, loc in zip(info["chs"],locs):
+    		ch["loc"] = loc
+    	raw = RawArray(data=np.random.randn(len(eeg_channels),100), info = info)
+    	raw.save(os.environ["RAWDIR"]+"acticap_64_ch_size_"+size+".fif", overwrite=True)
+"""
 
 
 def inverse_operator(epochs, tnoise=(0.9,1), part="b", write_inv=True, write_fwd=True, write_cov=True, mindist=2):
