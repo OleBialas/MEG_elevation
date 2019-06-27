@@ -33,10 +33,10 @@ def get_oneback_targets(block):
         if events[i][2] == events[i-1][2] and events[i][2] != 8192: #this is a target
             targets.append(i)
             if events[i+1][2] or events[i+2][2] == 8192:#target was recognized
-                corrects.append(i) 
+                corrects.append(i)
             else: #target was not recognized
                 false_negatives.append(i)
-        
+
         if events[i][2] == 8192 and (events[i][0]-events[i-1][0])<1500 and events[i-1][2] != events[i-2][2]:
             # button was pressed and it was not for a target or to end a break
             false_positives.append(i)

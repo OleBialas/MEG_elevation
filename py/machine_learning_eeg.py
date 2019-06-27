@@ -14,6 +14,35 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report, accuracy_score
 
+
+def classify_samples(epochs, k=100, kernel="linear", scale_data=True):
+    "classify each sample in the epoches data using support vector machine with kfold cross validation"
+    n_samples = epochs._data.shape[2]
+    targets=epochs.events[:,2]
+
+    kf = KFold(n_splits=k, shuffle=True)
+    clf = SVC(kernel=kernel)
+    accuracy=[]
+    for i in range(n_samples): # split the data into samples
+        sample_accuracy=[]
+        data = epochs._data[:,:,i]
+
+        for train_idx, test_idx in kf.split(data):
+            X_train, y_train = data[train_idx], targets[train_idx]
+            X_test, y_test = data[test_idx], targets[test_idx]
+
+            if scale_data: #scale the data
+                sc = StandardScaler()
+                X_train = sc.fit_transform(X_train)
+                X_test = sc.fit_transform(X_test)
+
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test) # predict y
+            sample_accuracy.append(accuracy_score(y_test, y_pred))
+        accuracy.append(sample_accuracy)
+
+
+
 def slice_epochs(epochs, step_size=0.01):
     start, stop = epochs.times[0], epochs.times[-1]
     n_steps = int((stop-start)/step_size)
@@ -28,7 +57,7 @@ def slice_epochs(epochs, step_size=0.01):
 def kfold_svm(epochs, k=5, scale_data=True, test_size=0.5, kernel="linear", decision_function_shape="ovo"):
 
     epoch_data = [epoch.T for epoch in epochs._data]
-    targets=epochs_ica.events[:,2]
+    targets=epochs.events[:,2]
     data = create_dataset(epoch_data, targets)
     kf = KFold(n_splits=k)
     accuracy=list()
@@ -124,13 +153,14 @@ def create_dataset(sequences, targets):
     return transformed
 
 if __name__ =="__main__":
-    os.environ["SUBJECT"] = "eegl03"
+    os.environ["SUBJECT"] = "eegl01"
     epochs = read_epochs(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"_Augenmitte-epo.fif"))
     ica = read_ica(os.path.join(os.environ["EXPDIR"],os.environ["SUBJECT"],os.environ["SUBJECT"]+"-ica.fif"))
-    epochs_ica = ica.apply(epochs) #reject components 0 (blinks) & 5(eye-movement)
-    epochs_ica.apply_baseline(baseline=(0.5,0.6)) # use 100ms before stimulus onset as baseline
-    epochs_ica.crop(tmin=0.5,tmax=1.0)
-    epochs_ica = epochs_ica["1","2","3"]
-    slice_epochs(epochs_ica)
+    epochs = ica.apply(epochs) #reject components 0 (blinks) & 5(eye-movement)
+    epochs = epochs["1","3"]
+    epochs.crop(tmin=0.6, tmax=1.0)
+
+    epochs
+    slice_epochs(epochs)
     #accuracy = kfold_svm(epochs_ica,k=5, test_size=0.5, kernel="linear", decision_function_shape="ovo")
     #print(mean(accuracy))
